@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sunyy.usercentor.mapper.VerifyCodeMapper">
+
+    <resultMap id="BaseResultMap" type="com.sunyy.usercentor.pojo.entity.VerifyCode">
+            <result property="email" column="email" jdbcType="VARCHAR"/>
+            <result property="code" column="code" jdbcType="VARCHAR"/>
+            <result property="remark" column="remark" jdbcType="VARCHAR"/>
+            <result property="expirationDate" column="expiration_date" jdbcType="TIMESTAMP"/>
+            <result property="codeType" column="code_type" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        email,code,remark,
+        expiration_date, code_type
+    </sql>
+</mapper>

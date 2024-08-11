@@ -37,7 +37,7 @@ public class Message {
     }
 
     public static Message error(String msg) {
-        return new Message(msg, true, null);
+        return new Message(msg, false, null);
     }
 
 }

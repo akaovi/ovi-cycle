@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: dev
   application:
     name: user-center
   datasource:
@@ -29,6 +31,9 @@ knife4j:
   setting:
     language: zh_cn
 
-snow:
+user-center:
   worker-id: 1
   datacenter-id: 1
+  pwd-salt: admin
+  verify-code-expire: 5 # 验证码过期时间，单位分钟
+  verify-code-length: 6 # 验证码长度

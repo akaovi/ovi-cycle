@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sunyy.usercentor.mapper.UserStatusMapper">
+
+    <resultMap id="BaseResultMap" type="com.sunyy.usercentor.pojo.entity.UserStatus">
+            <id property="userId" column="user_id" jdbcType="BIGINT"/>
+            <result property="lastLoginTime" column="last_login_time" jdbcType="TIMESTAMP"/>
+            <result property="lastLoginIp" column="last_login_ip" jdbcType="VARCHAR"/>
+            <result property="online" column="online" jdbcType="TINYINT"/>
+            <result property="devices" column="devices" jdbcType="VARCHAR"/>
+            <result property="token" column="token" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id,last_login_time,last_login_ip,
+        online,devices,token
+    </sql>
+</mapper>

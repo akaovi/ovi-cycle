@@ -1,7 +1,5 @@
 package com.sunyy.usercentor.pojo.vo;
 
-import lombok.Data;
-
 import java.util.Date;
 
 /**
