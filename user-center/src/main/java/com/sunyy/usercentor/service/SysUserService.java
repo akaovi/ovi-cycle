@@ -41,4 +41,12 @@ public interface SysUserService extends IService<SysUser> {
      * @param response response
      */
     Message loginEmail(@Valid LoginUserDto loginUserDto, HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 校验是否登录
+     *
+     * @param email 邮箱
+     * @param request request
+     */
+    Message checkLogin(String email, HttpServletRequest request);
 }

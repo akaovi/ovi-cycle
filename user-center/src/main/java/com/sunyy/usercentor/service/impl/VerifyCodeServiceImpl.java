@@ -50,9 +50,11 @@ public class VerifyCodeServiceImpl extends ServiceImpl<VerifyCodeMapper, VerifyC
         if (!matcher.find()) {
             return Message.error("邮箱格式不正确");
         }
-        boolean emailRegistered = sysUserService.isEmailRegistered(email);
-        if (emailRegistered) {
-            return Message.error("邮箱已被注册");
+        if (type == VerifyCodeType.REGISTER) {
+            boolean emailRegistered = sysUserService.isEmailRegistered(email);
+            if (emailRegistered) {
+                return Message.error("邮箱已被注册");
+            }
         }
         String code = RandomStringGenerator.generateRandomString(userCenterConfig.getVerifyCodeLength());
         log.debug("email: {}, code: {}", email, code);

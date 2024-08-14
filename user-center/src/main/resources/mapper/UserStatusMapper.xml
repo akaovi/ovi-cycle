@@ -17,4 +17,9 @@
         user_id,last_login_time,last_login_ip,
         online,devices,token
     </sql>
+    <select id="getUserStatusByEmail" resultType="com.sunyy.usercentor.pojo.entity.UserStatus">
+        select * from user_status
+        left join sys_user on user_status.user_id = sys_user.user_id
+        where sys_user.email = #{email}
+    </select>
 </mapper>

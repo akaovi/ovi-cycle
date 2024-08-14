@@ -11,6 +11,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface UserStatusMapper extends BaseMapper<UserStatus> {
 
+    UserStatus getUserStatusByEmail(String email);
+
 }
 
 

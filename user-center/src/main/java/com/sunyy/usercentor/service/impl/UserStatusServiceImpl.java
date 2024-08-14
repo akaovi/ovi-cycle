@@ -6,8 +6,10 @@ import com.sunyy.usercentor.common.MyException;
 import com.sunyy.usercentor.pojo.entity.UserStatus;
 import com.sunyy.usercentor.service.UserStatusService;
 import com.sunyy.usercentor.mapper.UserStatusMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -19,6 +21,9 @@ import java.util.List;
 public class UserStatusServiceImpl extends ServiceImpl<UserStatusMapper, UserStatus>
     implements UserStatusService{
 
+    @Resource
+    private UserStatusMapper userStatusMapper;
+
     @Override
     public boolean checkUserIsLogin(Long userId) {
         if (userId == null) {
@@ -26,11 +31,21 @@ public class UserStatusServiceImpl extends ServiceImpl<UserStatusMapper, UserSta
         }
         List<UserStatus> users = list(new QueryWrapper<UserStatus>().eq("user_id", userId));
         if (users == null || users.isEmpty()) {
-            throw new MyException("校验用户是否登录时，用户不存在");
+            return false;
         }
         UserStatus userStatus = users.get(0);
         return userStatus.getOnline() == 1;
     }
+
+    @Override
+    public UserStatus getUserStatusByEmail(String email) {
+        if (StringUtils.isBlank(email)) {
+            return null;
+        }
+        return userStatusMapper.getUserStatusByEmail(email);
+    }
+
+
 }
 
 

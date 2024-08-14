@@ -86,6 +86,19 @@ public class UserCenterController {
     }
 
     /**
+     * 检查是否登录
+     */
+    @RequestParamsLog
+    @PostMapping("/email/check/login")
+    @Operation(summary = "检查是否登录")
+    public Message checkLogin(@RequestParam String email, HttpServletRequest request) {
+        if (StringUtils.isBlank(email)) {
+            return Message.error("邮箱不能为空");
+        }
+        return sysUserService.checkLogin(email, request);
+    }
+
+    /**
      * 新增用户
      */
     @PostMapping("/add")

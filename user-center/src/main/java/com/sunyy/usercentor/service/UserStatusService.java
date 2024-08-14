@@ -18,4 +18,12 @@ public interface UserStatusService extends IService<UserStatus> {
      */
     boolean checkUserIsLogin(Long userId);
 
+    /**
+     * 根据邮箱获取用户状态
+     *
+     * @param email 邮箱
+     * @return 用户状态
+     */
+    UserStatus getUserStatusByEmail(String email);
+
 }
