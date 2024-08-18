@@ -17,6 +17,7 @@ public enum VerifyCodeType {
     REGISTER(0, "注册时使用的验证码", "注册验证码"),
     LOGIN(1, "登录时使用的验证码", "登录验证码"),
     CHANGE_PWD(2, "更换密码时使用的验证码", "更改密码验证码"),
+    CHANGE_EMAIL(3, "换绑邮箱验证码", "换绑邮箱验证码"),
     NoneType(-1, "未知类型", "")
     ;
 

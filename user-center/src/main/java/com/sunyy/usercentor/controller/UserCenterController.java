@@ -1,20 +1,22 @@
 package com.sunyy.usercentor.controller;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.sunyy.usercentor.common.Message;
-import com.sunyy.usercentor.common.anno.RequestParamsLog;
-import com.sunyy.usercentor.pojo.dto.LoginUserDto;
-import com.sunyy.usercentor.pojo.dto.RegisterUserDto;
-import com.sunyy.usercentor.pojo.enume.VerifyCodeType;
+import com.sunyy.usercentor.mapStruct.SysUserMapStructMapper;
+import com.sunyy.usercentor.pojo.dto.*;
+import com.sunyy.usercentor.pojo.entity.SysUser;
 import com.sunyy.usercentor.service.SysUserService;
-import com.sunyy.usercentor.service.VerifyCodeService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author ovi
@@ -29,25 +31,11 @@ public class UserCenterController {
     private SysUserService sysUserService;
 
     @Resource
-    private VerifyCodeService verifyCodeService;
-
-    /**
-     * 发送注册的验证码
-     */
-    @RequestParamsLog
-    @PostMapping("/email/send-register-code")
-    @Operation(summary = "注册验证码发送")
-    public Message sendRegisterCode(@RequestParam String email) {
-        if (StringUtils.isBlank(email)) {
-            return Message.error("邮箱不能为空");
-        }
-        return verifyCodeService.sendCodeToEmail(email, VerifyCodeType.REGISTER);
-    }
+    private SysUserMapStructMapper sysUserMapStructMapper;
 
     /**
      * 注册
      */
-    @RequestParamsLog
     @PostMapping("/email/register")
     @Operation(summary = "注册")
     public Message registerEmail(@RequestBody RegisterUserDto registerUserDto, HttpServletRequest request, HttpServletResponse response) {
@@ -59,22 +47,8 @@ public class UserCenterController {
     }
 
     /**
-     * 发送注册的验证码
-     */
-    @RequestParamsLog
-    @PostMapping("/email/send-login-code")
-    @Operation(summary = "登录验证码发送")
-    public Message sendLoginCode(@RequestParam String email) {
-        if (StringUtils.isBlank(email)) {
-            return Message.error("邮箱不能为空");
-        }
-        return verifyCodeService.sendCodeToEmail(email, VerifyCodeType.LOGIN);
-    }
-
-    /**
      * 登录
      */
-    @RequestParamsLog
     @PostMapping("/email/login")
     @Operation(summary = "登录")
     public Message loginEmail(@RequestBody LoginUserDto loginUserDto, HttpServletRequest request, HttpServletResponse response) {
@@ -88,7 +62,6 @@ public class UserCenterController {
     /**
      * 检查是否登录
      */
-    @RequestParamsLog
     @PostMapping("/email/check/login")
     @Operation(summary = "检查是否登录")
     public Message checkLogin(@RequestParam String email, HttpServletRequest request) {
@@ -99,36 +72,187 @@ public class UserCenterController {
     }
 
     /**
-     * 新增用户
+     * 用于管理员新增用户
      */
     @PostMapping("/add")
-    public Message add() {
-        log.info("add");
-        return null;
+    @Operation(summary = "用于管理员新增用户")
+    public Message addOneUser(@RequestParam String email, @RequestParam String pwd) {
+        if (StringUtils.isAnyBlank(email, pwd)) {
+            return Message.error("参数为空");
+        }
+        SysUser sysUser = sysUserService.addUser(email, pwd);
+        return Message.ok(sysUser);
     }
 
+    /**
+     * 更新用户信息
+     */
     @PostMapping("/update")
-    public Message update() {
-        log.info("update");
-        return null;
+    @Operation(summary = "更新用户信息")
+    public Message updateUserInfo(@RequestBody UpdateUserBaseInfoDto updateUserBaseInfoDto) {
+        if (updateUserBaseInfoDto == null || updateUserBaseInfoDto.getUserId() == null) {
+            return Message.error("重要参数为空");
+        }
+        return sysUserService.updateSysUser(updateUserBaseInfoDto);
     }
 
-    @PostMapping("/delete")
-    public Message delete() {
-        log.info("delete");
-        return null;
+    /**
+     * 删除用户
+     */
+    @PostMapping("/delete/{userId}")
+    @Operation(summary = "删除用户")
+    public Message deleteOne(@PathVariable Long userId) {
+        if (userId == null) {
+            return Message.error("参数为空");
+        }
+        boolean update = sysUserService.update(new UpdateWrapper<SysUser>().eq("user_id", userId).set("is_deleted", 1));
+        if (update) {
+            return Message.ok("删除成功");
+        } else {
+            return Message.error("删除失败");
+        }
     }
 
-    @PostMapping("/get")
-    public Message get() {
-        log.info("get");
-        return null;
+    /**
+     * 查询单个用户信息
+     */
+    @PostMapping("/get/one/{userId}")
+    @Operation(summary = "查询单个用户信息")
+    public Message getOneUser(@PathVariable Long userId) {
+        if (userId == null) {
+            return Message.error("参数为空");
+        }
+        SysUser one = sysUserService.getOne(new UpdateWrapper<SysUser>().eq("user_id", userId).eq("is_deleted", 0));
+        if (one == null) {
+            return Message.error("用户不存在");
+        }
+        return Message.ok(sysUserMapStructMapper.toSysUserVo(one));
     }
 
-    @PostMapping("/list")
-    public Message list() {
-        log.info("list");
-        return null;
+    /**
+     * 分页查询用户
+     */
+    @PostMapping("/page/list")
+    @Operation(summary = "分页查询用户")
+    public Message listUsers(@RequestBody QuerySysUserDto querySysUserDto) {
+        if (querySysUserDto == null) {
+            return Message.error("参数为空");
+        }
+        return Message.ok(sysUserService.list(querySysUserDto));
+    }
+
+    /**
+     * 禁用账号
+     */
+    @PostMapping("/disable/account/{userId}")
+    @Operation(summary = "禁用账号")
+    public Message disableAccount(@PathVariable Long userId) {
+        if (userId == null || userId < 0) {
+            return Message.error("用户非法");
+        }
+        boolean b = sysUserService.disableAccount(userId);
+        if (b) {
+            return Message.ok("禁用成功");
+        } else {
+            return Message.error("禁用失败");
+        }
+    }
+
+    /**
+     * 修改密码
+     */
+    @PostMapping("/change/pwd")
+    @Operation(summary = "修改密码")
+    public Message changePwd(@RequestBody ChangePwdDto changePwdDto) {
+        if (changePwdDto.getUserId() == null || changePwdDto.getUserId() < 0) {
+            return Message.error("用户非法");
+        }
+        if (StringUtils.isBlank(changePwdDto.getNewPwd()) || changePwdDto.getNewPwd().trim().length() < 8) {
+            return Message.error("密码不能为空且长度不能小于8");
+        }
+        boolean b = sysUserService.changePwd(changePwdDto);
+        if (b) {
+            return Message.ok("修改成功");
+        } else {
+            return Message.error("修改失败");
+        }
+    }
+
+    /**
+     * 更新用户角色
+     */
+    @PostMapping("/update/role/{userId}")
+    @Operation(summary = "更新用户角色")
+    public Message updateUserRole(@PathVariable Long userId, @RequestParam Integer userRole) {
+        if (userId == null || userId < 0 || userRole == null) {
+            return Message.error("参数非法");
+        }
+        boolean b = sysUserService.updateUserRole(userId, userRole);
+        if (b) {
+            return Message.ok("修改成功");
+        } else {
+            return Message.error("修改失败");
+        }
+    }
+
+    /**
+     * 更新用户权限
+     */
+    @PostMapping("/update/permission/{userId}")
+    @Operation(summary = "更新用户权限")
+    public Message updateUserPermission(@PathVariable Long userId, @RequestBody List<String> userPermission) {
+        if (userId == null || userId < 0) {
+            return Message.error("用户非法");
+        }
+        if (userPermission == null || userPermission.isEmpty()) {
+            return Message.error("权限为空");
+        }
+        boolean b = sysUserService.updateUserPermission(userId, userPermission);
+        if (b) {
+            return Message.ok("修改成功");
+        } else {
+            return Message.error("修改失败");
+        }
+    }
+
+    /**
+     * 获取所有权限
+     */
+    @PostMapping("/get/all/permission")
+    @Operation(summary = "获取所有权限")
+    public Message getAllPermission() {
+        return Message.ok(new ArrayList<String>());
+    }
+
+    /**
+     * 更新用户头像
+     */
+    @PostMapping("/update/avatar/{userId}")
+    @Operation(summary = "更新用户头像")
+    public Message updateUserAvatar(@PathVariable Long userId, @RequestParam MultipartFile avatar) {
+        if (userId == null || userId < 0) {
+            return Message.error("用户非法");
+        }
+        if (avatar == null) {
+            return Message.error("头像为空");
+        }
+        if (sysUserService.updateUserAvatar(userId, avatar)) {
+            return Message.ok("修改成功");
+        } else {
+            return Message.error("修改失败");
+        }
+    }
+
+    /**
+     * 更改邮箱绑定
+     */
+    @PostMapping("/change/email")
+    @Operation(summary = "更改邮箱绑定")
+    public Message ChangeEmailBinding(@RequestBody BindEmailChangeDto bindEmailChangeDto) {
+        if (bindEmailChangeDto.getUserId() == null || bindEmailChangeDto.getUserId() < 0) {
+            return Message.error("用户非法");
+        }
+        return sysUserService.ChangeEmailBinding(bindEmailChangeDto);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.sunyy.usercentor.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sunyy.usercentor.common.Message;
 import com.sunyy.usercentor.config.UserCenterConfig;
@@ -12,13 +13,14 @@ import com.sunyy.usercentor.pojo.enume.VerifyCodeType;
 import com.sunyy.usercentor.service.SysUserService;
 import com.sunyy.usercentor.service.VerifyCodeService;
 import com.sunyy.usercentor.utils.RandomStringGenerator;
+import com.sunyy.usercentor.utils.RegUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author 60382
@@ -29,11 +31,6 @@ import java.util.regex.Pattern;
 @Service
 public class VerifyCodeServiceImpl extends ServiceImpl<VerifyCodeMapper, VerifyCode>
         implements VerifyCodeService {
-
-    /**
-     * 邮箱正则校验
-     */
-    private static final Pattern EMAIL_REGEX = Pattern.compile("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$");
 
     @Resource
     private EmailHandler emailHandler;
@@ -46,9 +43,8 @@ public class VerifyCodeServiceImpl extends ServiceImpl<VerifyCodeMapper, VerifyC
 
     @Override
     public Message sendCodeToEmail(String email, VerifyCodeType type) {
-        Matcher matcher = EMAIL_REGEX.matcher(email);
-        if (!matcher.find()) {
-            return Message.error("邮箱格式不正确");
+        if (!RegUtil.checkEmail(email)) {
+            return Message.error("邮箱格式非法");
         }
         if (type == VerifyCodeType.REGISTER) {
             boolean emailRegistered = sysUserService.isEmailRegistered(email);
@@ -62,9 +58,8 @@ public class VerifyCodeServiceImpl extends ServiceImpl<VerifyCodeMapper, VerifyC
         verifyCode.setCodeType(type.getCode());
         verifyCode.setEmail(email);
         verifyCode.setCode(code);
-        LocalDateTime now = LocalDateTime.now();
-        verifyCode.setExpirationDate(LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(),
-                now.getHour(), now.getMinute() + userCenterConfig.getVerifyCodeExpire(), now.getSecond()));
+        verifyCode.setExpirationDate(LocalDateTime.now().plusMinutes(userCenterConfig.getVerifyCodeExpire()));
+        verifyCode.setIsDeleted(0);
         save(verifyCode);
         ToEmail toEmail = new ToEmail();
         toEmail.setTos(new String[]{email});
@@ -79,12 +74,24 @@ public class VerifyCodeServiceImpl extends ServiceImpl<VerifyCodeMapper, VerifyC
 
     @Override
     public boolean verifyCode(String email, String code, Integer type) {
+        LocalDateTime now = LocalDateTime.now();
         QueryWrapper<VerifyCode> wrapper = new QueryWrapper<>();
         wrapper.eq("email", email);
         wrapper.eq("code_type", type);
-        wrapper.ge("expiration_date", LocalDateTime.now());
-        long count = list(wrapper).stream().filter(verifyCode -> verifyCode.getCode().equals(code)).count();
-        return count != 0;
+        wrapper.ge("expiration_date", now);
+        wrapper.eq("is_deleted", 0);
+        List<VerifyCode> collect = list(wrapper).stream().filter(verifyCode -> verifyCode.getCode().equals(code)).collect(Collectors.toList());
+        if (collect.isEmpty()) {
+            return false;
+        }
+        UpdateWrapper<VerifyCode> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("email", email);
+        updateWrapper.eq("code_type", type);
+        updateWrapper.ge("expiration_date", now);
+        updateWrapper.eq("is_deleted", 0);
+        updateWrapper.set("is_deleted", 1);
+        update(updateWrapper);
+        return true;
     }
 
 }

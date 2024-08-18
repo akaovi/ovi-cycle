@@ -43,6 +43,12 @@ public class VerifyCode implements Serializable {
     @TableField(value = "code_type")
     private Integer codeType;
 
+    /**
+     * 0 未被删除  1 已被删除
+     */
+    @TableField(value = "is_deleted")
+    private Integer isDeleted;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

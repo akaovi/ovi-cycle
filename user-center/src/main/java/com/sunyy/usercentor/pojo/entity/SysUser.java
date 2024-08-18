@@ -3,6 +3,7 @@ package com.sunyy.usercentor.pojo.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -107,14 +108,28 @@ public class SysUser implements Serializable {
     /**
      * 创建时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(value = "create_time")
     private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(value = "update_time")
     private LocalDateTime updateTime;
+
+    /**
+     * 一个json数组，角色权限符号
+     */
+    @TableField(value = "user_permission")
+    private String userPermission;
+
+    /**
+     * 用户角色 0-无上意志 1-管理员 2-普通用户
+     */
+    @TableField(value = "user_role")
+    private Integer userRole;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

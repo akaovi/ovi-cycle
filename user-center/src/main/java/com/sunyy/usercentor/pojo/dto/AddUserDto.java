@@ -1,23 +1,15 @@
-package com.sunyy.usercentor.pojo.vo;
+package com.sunyy.usercentor.pojo.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
 
-import java.time.LocalDateTime;
-
 /**
  * @author ovi
- * @since 2024/7/17
+ * @since 2024/8/18
  */
 @Data
 @ToString
-public class SysUserVo {
-    /**
-     * 用户id 雪花算法
-     */
-    private Long userId;
-
+public class AddUserDto {
     /**
      * 姓名
      */
@@ -54,6 +46,11 @@ public class SysUserVo {
     private String avatar;
 
     /**
+     * 密码
+     */
+    private String pwd;
+
+    /**
      * 签名
      */
     private String signature;
@@ -74,20 +71,12 @@ public class SysUserVo {
     private String blog;
 
     /**
-     * 创建时间
+     * 一个json数组，角色权限符号
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createTime;
-
-    /**
-     * 更新时间
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime updateTime;
+    private String userPermission;
 
     /**
      * 用户角色 0-无上意志 1-管理员 2-普通用户
      */
     private Integer userRole;
-
 }

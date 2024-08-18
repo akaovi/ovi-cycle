@@ -9,6 +9,25 @@ spring:
       jdbc-url: jdbc:mysql://127.0.0.1:3306/user_center?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false&rewriteBatchedStatements=true&autoReconnect=true
       username: root
       password: 123456
+  mail:
+    #smtp服务主机  qq smtp.qq.com  163 smtp.163.com
+    host: xxx
+    #服务协议
+    protocol: smtp
+    # 编码集
+    default-encoding: UTF-8
+    #发送邮件的账户
+    username: xxx
+    #授权码
+    password: xxx
+    test-connection: true
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
 
 server:
   port: 19990
